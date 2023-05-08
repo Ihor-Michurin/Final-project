@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,9 +50,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Flutter Navigation Demo',
       theme: ThemeData(
-        primaryColor: Colors.black, // set the color here
         primarySwatch: Colors.blue,
-          canvasColor: Colors.black,
       ),
       home: Scaffold(
         body: _pages.elementAt(_selectedIndex),
@@ -92,31 +92,83 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class HomePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String? accessToken;
+  TextEditingController searchController = TextEditingController();
+  List<dynamic> movies = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getToken();
+  }
+
+  void getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    accessToken = prefs.getString('access_token');
+  }
+
+  void searchMovies(String query) async {
+    var date = DateTime.now().toString().split(" ")[0];
+    var response = await http.get(
+        Uri.parse(
+            'https://fs-mt.qwerty123.tech/api/movies?date=$date&query=$query'),
+        headers: {'Authorization': 'Bearer $accessToken'});
+    var result = jsonDecode(response.body);
+    setState(() {
+      movies = result['data'];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Film Search'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Welcome to the Navigation Demo App',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search for movies',
+              ),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/page1');
+          ),
+          ElevatedButton(
+            onPressed: () {
+              searchMovies(searchController.text);
+            },
+            child: Text('Search'),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: movies.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  leading: Image.network(movies[index]['smallImage']),
+                  title: Text(movies[index]['name']),
+                  subtitle: Text(
+                      '${movies[index]['duration']} minutes | ${movies[index]['genre']}'),
+                  trailing: Text(
+                    '${movies[index]['rating']}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
               },
-              child: Text('Go to Page 1'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
