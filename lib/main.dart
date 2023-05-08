@@ -102,6 +102,7 @@ class _HomePageState extends State<HomePage> {
   String? accessToken;
   TextEditingController searchController = TextEditingController();
   List<dynamic> movies = [];
+  List<dynamic> sessions = [];
 
   @override
   void initState() {
@@ -123,6 +124,18 @@ class _HomePageState extends State<HomePage> {
     var result = jsonDecode(response.body);
     setState(() {
       movies = result['data'];
+    });
+  }
+
+  void getSessions(int movieId) async {
+    var date = DateTime.now().toString().split(" ")[0];
+    var sessionResponse = await http.get(
+        Uri.parse(
+            'https://fs-mt.qwerty123.tech/api/movies/sessions?movieId=$movieId&date=$date'),
+        headers: {'Authorization': 'Bearer $accessToken'});
+    var sessionResult = jsonDecode(sessionResponse.body);
+    setState(() {
+      sessions = sessionResult['data'];
     });
   }
 
@@ -164,6 +177,35 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  onTap: () {
+                    getSessions(movies[index]['id']);
+                  },
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: sessions.length,
+              itemBuilder: (BuildContext context, int index) {
+                var session = sessions[index];
+                var room = session['room'];
+                var rows = room['rows'];
+                var totalAvailableSeats = 0;
+                var totalSeats = 0;
+                rows.forEach((row) {
+                  var seats = row['seats'];
+                  totalSeats = (totalSeats + seats.length) as int;
+                  seats.forEach((seat) {
+                    if (seat['isAvailable']) {
+                      totalAvailableSeats++;
+                    }
+                  });
+                });
+                return ListTile(
+                  title: Text('${room['name']} - ${session['type']}'),
+                  subtitle: Text(
+                      'Available Seats: $totalAvailableSeats/$totalSeats | Min Price: ${session['minPrice']} UAH'),
                 );
               },
             ),
