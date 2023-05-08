@@ -4,8 +4,20 @@ import 'package:final_project/page3.dart';
 import 'package:final_project/page4.dart';
 import 'package:final_project/page5.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
+import 'auth.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final sessionToken = await AuthHelper.getSessionToken();
+  final accessToken = await AuthHelper.getAccessToken(sessionToken);
+  await AuthHelper.storeAccessToken(accessToken);
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? accessToken1 = prefs.getString('access_token');
+  debugPrint('accessToken1: $accessToken1');
+
   runApp(MyApp());
 }
 
