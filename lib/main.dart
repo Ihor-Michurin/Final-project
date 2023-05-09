@@ -343,11 +343,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                           return GestureDetector(
                             onTap: () {
                               if (seat['isAvailable']) {
-                                if (seat['isSelected'] != null && seat['isSelected']) {
-                                  seat['isSelected'] = false;
-                                } else {
-                                  seat['isSelected'] = true;
-                                }
+                                setState(() {
+                                  seat['isSelected'] = !(seat['isSelected'] ?? false);
+                                });
                               }
                             },
                             child: Container(
