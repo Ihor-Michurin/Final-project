@@ -293,18 +293,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   }
 
-  void selectSeat(int index) {
-    setState(() {
-      seats[index]['isSelected'] = true;
-    });
-  }
-
-  void unselectSeat(int index) {
-    setState(() {
-      seats[index]['isSelected'] = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -324,45 +312,67 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             ),
             seats.isEmpty
                 ? CircularProgressIndicator() // Show a progress indicator while seats are being loaded
-                : Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 8,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
+                : Flexible(
+              child: ListView.builder(
                 itemCount: seats.length,
-                itemBuilder: (BuildContext context, int index) {
-                  var seat = seats[index];
-                  return GestureDetector(
-                    onTap: () {
-                      if (seat['isAvailable']) {
-                        if (seat['isSelected']) {
-                          unselectSeat(index);
-                        } else {
-                          selectSeat(index);
-                        }
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: seat['isAvailable']
-                            ? seat['isSelected']
-                            ? Colors.blue
-                            : Colors.grey
-                            : Colors.red,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${seat['index']}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                itemBuilder: (BuildContext context, int rowIndex) {
+                  var row = seats[rowIndex];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Row ${row['index']}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
                       ),
-                    ),
+                      GridView.builder(
+                        gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 8, // Number of columns
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          mainAxisExtent: 50, // Height of each row
+                        ),
+                        itemCount: row['seats'].length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (BuildContext context, int seatIndex) {
+                          var seat = row['seats'][seatIndex];
+                          return GestureDetector(
+                            onTap: () {
+                              if (seat['isAvailable']) {
+                                if (seat['isSelected'] != null && seat['isSelected']) {
+                                  seat['isSelected'] = false;
+                                } else {
+                                  seat['isSelected'] = true;
+                                }
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: seat['isAvailable'] ?? false
+                                    ? seat['isSelected'] ?? false
+                                    ? Colors.blue
+                                    : Colors.grey
+                                    : Colors.red,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${seat['index']}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   );
                 },
               ),
