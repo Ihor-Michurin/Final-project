@@ -137,7 +137,29 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       sessions = sessionResult['data'];
     });
+
+    // Create a separate async function to retrieve seat information
+    Future<void> retrieveSeats(session) async {
+      var seatResponse = await http.get(
+          Uri.parse(
+              'https://fs-mt.qwerty123.tech/api/movies/sessions/${session['id']}/seats'),
+          headers: {'Authorization': 'Bearer $accessToken'});
+      var seatResult = jsonDecode(seatResponse.body);
+      session['seats'] = seatResult['data'];
+    }
+
+    // Call the async function for each session
+    for (var session in sessions) {
+      await retrieveSeats(session);
+    }
+
+    setState(() {
+      // Update the state with the new session information
+      sessions = sessions;
+    });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -206,11 +228,151 @@ class _HomePageState extends State<HomePage> {
                   title: Text('${room['name']} - ${session['type']}'),
                   subtitle: Text(
                       'Available Seats: $totalAvailableSeats/$totalSeats | Min Price: ${session['minPrice']} UAH'),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      // Pass the session and room information to the seat selection screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SeatSelectionScreen(
+                            session: session,
+                            room: room,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text('Select Seats'),
+                  ),
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class SeatSelectionScreen extends StatefulWidget {
+  final dynamic session;
+  final dynamic room;
+
+  const SeatSelectionScreen({
+    Key? key,
+    required this.session,
+    required this.room,
+  }) : super(key: key);
+
+  @override
+  _SeatSelectionScreenState createState() => _SeatSelectionScreenState();
+}
+
+class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
+  List<dynamic> seats = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Retrieve seat information for the selected session and room
+    getSeats();
+  }
+
+  void getSeats() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('access_token');
+    var seatResponse = await http.get(
+        Uri.parse(
+            'https://fs-mt.qwerty123.tech/api/movies/sessions/${widget.session['id']}'),
+        headers: {'Authorization': 'Bearer $accessToken'});
+    var seatResult = jsonDecode(seatResponse.body);
+    setState(() {
+      seats = seatResult['data']['room']['rows']
+          .toList();
+    });
+
+  }
+
+  void selectSeat(int index) {
+    setState(() {
+      seats[index]['isSelected'] = true;
+    });
+  }
+
+  void unselectSeat(int index) {
+    setState(() {
+      seats[index]['isSelected'] = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Seat Selection'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Text(
+              'Select Seats for ${widget.room['name']} - ${widget.session['type']}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            seats.isEmpty
+                ? CircularProgressIndicator() // Show a progress indicator while seats are being loaded
+                : Expanded(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: seats.length,
+                itemBuilder: (BuildContext context, int index) {
+                  var seat = seats[index];
+                  return GestureDetector(
+                    onTap: () {
+                      if (seat['isAvailable']) {
+                        if (seat['isSelected']) {
+                          unselectSeat(index);
+                        } else {
+                          selectSeat(index);
+                        }
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: seat['isAvailable']
+                            ? seat['isSelected']
+                            ? Colors.blue
+                            : Colors.grey
+                            : Colors.red,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${seat['index']}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text('Confirm Selection'),
+            ),
+          ],
+        ),
       ),
     );
   }
