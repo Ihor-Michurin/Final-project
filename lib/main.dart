@@ -376,7 +376,63 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                // Collect the selected seats
+                List<int> selectedSeats = [];
+                for (var row in seats) {
+                  for (var seat in row['seats']) {
+                    if (seat['isSelected'] ?? false) {
+                      selectedSeats.add(seat['id']);
+                    }
+                  }
+                }
+
+                if (selectedSeats.isEmpty) {
+                  // No seats were selected, show an error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Please select at least one seat.'),
+                    ),
+                  );
+                } else {
+                  // Send the booking request to the server
+                  String? accessToken =
+                  await SharedPreferences.getInstance().then(
+                        (prefs) => prefs.getString('access_token'),
+                  );
+
+                  var bookingResponse = await http.post(
+                    Uri.parse('https://fs-mt.qwerty123.tech/api/movies/book'),
+                    headers: {'Authorization': 'Bearer $accessToken'},
+                    body: jsonEncode({
+                      'sessionId': widget.session['id'],
+                      'seats': selectedSeats,
+                    }),
+                  );
+                  var bookingResult = jsonDecode(bookingResponse.body);
+
+                  if (bookingResponse.statusCode == 200) {
+                    // Booking successful, show the payment screen
+                    /*Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PaymentScreen(
+                              accessToken: accessToken,
+                              sessionId: widget.session['id'],
+                              seats: selectedSeats,
+                            ),
+                      ),
+                    );*/
+                  } else {
+                    // Booking failed, show an error message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(bookingResult['message']),
+                      ),
+                    );
+                  }
+                }
+              },
               child: Text('Confirm Selection'),
             ),
           ],
