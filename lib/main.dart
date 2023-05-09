@@ -115,69 +115,6 @@ class _HomePageState extends State<HomePage> {
     accessToken = prefs.getString('access_token');
   }
 
-  void showSeatSelectionDialog(dynamic session) {
-    var room = session['room'];
-    var rows = room['rows'];
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('${room['name']} - ${session['type']}'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Screen'),
-                SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(),
-                  ),
-                  child: Column(
-                    children: [
-                      for (var row in rows)
-                        Row(
-                          children: [
-                            for (var seat in row['seats'])
-                              GestureDetector(
-                                onTap: () {
-                                  if (seat['isAvailable']) {
-                                    // TODO: Handle seat selection
-                                  }
-                                },
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  margin: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(),
-                                    color: seat['isAvailable'] ? Colors.green : Colors.grey,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
   void searchMovies(String query) async {
     var date = DateTime.now().toString().split(" ")[0];
     var response = await http.get(
@@ -227,32 +164,22 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: sessions.length,
+              itemCount: movies.length,
               itemBuilder: (BuildContext context, int index) {
-                var session = sessions[index];
-                var room = session['room'];
-                var rows = room['rows'];
-                var totalAvailableSeats = 0;
-                var totalSeats = 0;
-                rows.forEach((row) {
-                  var seats = row['seats'];
-                  totalSeats = (totalSeats + seats.length) as int;
-                  seats.forEach((seat) {
-                    if (seat['isAvailable']) {
-                      totalAvailableSeats++;
-                    }
-                  });
-                });
                 return ListTile(
-                  title: Text('${room['name']} - ${session['type']}'),
+                  leading: Image.network(movies[index]['smallImage']),
+                  title: Text(movies[index]['name']),
                   subtitle: Text(
-                      'Available Seats: $totalAvailableSeats/$totalSeats | Min Price: ${session['minPrice']} UAH'),
-                  trailing: IconButton(
-                    onPressed: () {
-                      showSeatSelectionDialog(session);
-                    },
-                    icon: Icon(Icons.chevron_right),
+                      '${movies[index]['duration']} minutes | ${movies[index]['genre']}'),
+                  trailing: Text(
+                    '${movies[index]['rating']}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  onTap: () {
+                    getSessions(movies[index]['id']);
+                  },
                 );
               },
             ),
@@ -279,12 +206,6 @@ class _HomePageState extends State<HomePage> {
                   title: Text('${room['name']} - ${session['type']}'),
                   subtitle: Text(
                       'Available Seats: $totalAvailableSeats/$totalSeats | Min Price: ${session['minPrice']} UAH'),
-                  trailing: IconButton(
-                    onPressed: () {
-                      showSeatSelectionDialog(session);
-                    },
-                    icon: Icon(Icons.chevron_right),
-                  ),
                 );
               },
             ),
@@ -294,4 +215,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
