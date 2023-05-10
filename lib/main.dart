@@ -6,13 +6,10 @@ import 'package:final_project/page4.dart';
 import 'package:final_project/page5.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 import 'auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/services.dart';
-import 'package:barcode_widget/barcode_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,10 +21,12 @@ void main() async {
   String? accessToken1 = prefs.getString('access_token');
   debugPrint('accessToken1: $accessToken1');
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -67,20 +66,12 @@ class _MyAppState extends State<MyApp> {
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.access_alarm),
+              icon: Icon(Icons.manage_accounts),
               label: 'Profile',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.access_time),
+              icon: Icon(Icons.airplane_ticket),
               label: 'Tickets',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.accessibility),
-              label: 'Page 3',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_box),
-              label: 'Page 4',
             ),
           ],
         ),
@@ -769,9 +760,16 @@ class _UserTicketsScreenState extends State<TicketsScreen> {
               placeholder: (context, url) => CircularProgressIndicator(),
               errorWidget: (context, url, error) => Icon(Icons.error),
             ),
-            title: Text(ticket['name']),
-            subtitle: Text(
-              'Date: ${DateTime.fromMillisecondsSinceEpoch(ticket['date'] * 1000)}',
+            title: Text('Ticket ID: ${ticket['id']}'), // Display ticket ID
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(ticket['name']),
+                Text(
+                  'Date: ${DateTime.fromMillisecondsSinceEpoch(
+                      ticket['date'] * 1000)}',
+                ),
+              ],
             ),
           );
         },
