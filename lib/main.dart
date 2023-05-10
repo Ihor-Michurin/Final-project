@@ -55,8 +55,8 @@ class _MyAppState extends State<MyApp> {
           onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+              icon: Icon(Icons.search),
+              label: 'Search',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.manage_accounts),
@@ -77,6 +77,7 @@ class _MyAppState extends State<MyApp> {
 
 
 class HomePage extends StatefulWidget {
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -84,6 +85,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? accessToken;
   TextEditingController searchController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
+
+
   List<dynamic> movies = [];
   List<dynamic> sessions = [];
 
@@ -98,8 +102,8 @@ class _HomePageState extends State<HomePage> {
     accessToken = prefs.getString('access_token');
   }
 
-  void searchMovies(String query) async {
-    var date = DateTime.now().toString().split(" ")[0];
+  void searchMovies(String query, String date) async {
+    date = date == "" ? DateTime.now().toString().split(" ")[0] : date;
     var response = await http.get(
         Uri.parse(
             'https://fs-mt.qwerty123.tech/api/movies?date=$date&query=$query'),
@@ -161,9 +165,20 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: TextField(
+              controller: dateController,
+              decoration: InputDecoration(
+                hintText: 'Enter date (YYYY-MM-DD)',
+              ),
+            ),
+          ),
           ElevatedButton(
             onPressed: () {
-              searchMovies(searchController.text);
+              String query = searchController.text;
+              String date = dateController.text;
+              searchMovies(query, date);
             },
             child: Text('Search'),
           ),
