@@ -449,3 +449,147 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   }
 }
 
+
+
+class PaymentScreen extends StatefulWidget {
+  final String? accessToken;
+  final int sessionId;
+  final List<int> seats;
+
+  PaymentScreen({
+    required this.accessToken,
+    required this.sessionId,
+    required this.seats,
+  });
+
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _cardNumberController = TextEditingController();
+  final _expirationDateController = TextEditingController();
+  final _cvvController = TextEditingController();
+  String _email = '';
+
+  @override
+  void dispose() {
+    _cardNumberController.dispose();
+    _expirationDateController.dispose();
+    _cvvController.dispose();
+    super.dispose();
+  }
+
+  void _submitPayment() async {
+    Dio dio = Dio();
+    dio.options.headers["Authorization"] = "Bearer ${widget.accessToken}";
+    Map<String, dynamic> requestBody = {
+      'seats': widget.seats.map((seat) => seat.toString()).toList(),
+      'sessionId': widget.sessionId.toString(),
+      'email': _email,
+      'cardNumber': _cardNumberController.text,
+      'expirationDate': _expirationDateController.text,
+      'cvv': _cvvController.text,
+    };
+
+    // Make the POST request
+
+    Response response = await dio.post(
+      "https://fs-mt.qwerty123.tech/api/movies/buy",
+      data: requestBody,
+    );
+    print("Response status: ${response.statusCode}");
+    print("Response data: ${response.data}");
+
+    if (response.statusCode == 200) {
+      // Payment successful, navigate to success screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } else {
+      // Payment failed, show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment failed. Please try again.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Payment'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Email'),
+              TextFormField(
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email address';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _email = value!,
+              ),
+              SizedBox(height: 16),
+              Text('Card number'),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                controller: _cardNumberController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your card number';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              Text('Expiration date'),
+              TextFormField(
+                keyboardType: TextInputType.datetime,
+                controller: _expirationDateController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your card\'s expiration date';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              Text('CVV'),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                controller: _cvvController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your card\'s CVV code';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    _submitPayment();
+                  }
+                },
+                child: Text('Submit Payment'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
