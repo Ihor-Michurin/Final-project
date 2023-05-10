@@ -503,11 +503,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     print("Response data: ${response.data}");
 
     if (response.statusCode == 200) {
-      // Payment successful, navigate to success screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+      // Payment successful, navigate to start screen
+      Navigator.popUntil(context, ModalRoute.withName('/'));
     } else {
       // Payment failed, show error message
       ScaffoldMessenger.of(context).showSnackBar(
