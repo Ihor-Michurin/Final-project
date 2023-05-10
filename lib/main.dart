@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
 
   static final List<Widget> _pages = <Widget>[
     HomePage(),
-    Page1(),
+    UserProfileScreen(),
     Page2(),
     Page3(),
     Page4(),
@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.access_alarm),
-              label: 'Page 1',
+              label: 'Profile',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.access_time),
@@ -493,26 +493,47 @@ class _PaymentScreenState extends State<PaymentScreen> {
       'cvv': _cvvController.text,
     };
 
-    // Make the POST request
+    try {
+      // Make the POST request
+      Response response = await dio.post(
+        "https://fs-mt.qwerty123.tech/api/movies/buy",
+        data: requestBody,
+      );
 
-    Response response = await dio.post(
-      "https://fs-mt.qwerty123.tech/api/movies/buy",
-      data: requestBody,
-    );
-    print("Response status: ${response.statusCode}");
-    print("Response data: ${response.data}");
+      print("Response status: ${response.statusCode}");
+      print("Response data: ${response.data}");
 
-    if (response.statusCode == 200) {
-      // Payment successful, navigate to start screen
-      Navigator.popUntil(context, ModalRoute.withName('/'));
-    } else {
-      // Payment failed, show error message
+      if (response.statusCode == 200) {
+        // Payment successful, navigate to start screen
+        Navigator.popUntil(context, ModalRoute.withName('/'));
+      } else {
+        // Payment failed, show error message
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('An error occurred during payment processing.'),
+              actions: [
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (error) {
+      // An error occurred during the payment process
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('Error'),
-            content: Text('Payment failed. Please try again.'),
+            content: Text('An error occurred during payment processing.'),
             actions: [
               TextButton(
                 child: Text('OK'),
@@ -526,6 +547,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -602,6 +624,91 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             )
         ),
+      ),
+    );
+  }
+}
+
+
+class UserProfileScreen extends StatefulWidget {
+  @override
+  _UserProfileScreenState createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  String? accessToken;
+  bool isLoading = true;
+  late Map<String, dynamic> userData;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    accessToken = prefs.getString('access_token');
+
+    String url = 'https://fs-mt.qwerty123.tech/api/user';
+
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      setState(() {
+        userData = jsonResponse['data'];
+        isLoading = false;
+      });
+    } else {
+      // Handle error
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('User Profile'),
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            title: Text('Name'),
+            subtitle: Text(userData['name'] ?? ""),
+          ),
+          ListTile(
+            title: Text('Phone Number'),
+            subtitle: Text(userData['phoneNumber'] ?? ""),
+          ),
+          ListTile(
+            title: Text('Created At'),
+            subtitle: Text(
+              DateTime.fromMillisecondsSinceEpoch(
+                userData['createdAt'] * 1000,
+              ).toString(),
+            ),
+          ),
+          ListTile(
+            title: Text('Updated At'),
+            subtitle: Text(
+              DateTime.fromMillisecondsSinceEpoch(
+                userData['updatedAt'] * 1000,
+              ).toString(),
+            ),
+          ),
+        ],
       ),
     );
   }
