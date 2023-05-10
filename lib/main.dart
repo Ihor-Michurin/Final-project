@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:final_project/page1.dart';
 import 'package:final_project/page2.dart';
 import 'package:final_project/page3.dart';
@@ -401,19 +402,25 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                         (prefs) => prefs.getString('access_token'),
                   );
 
-                  var bookingResponse = await http.post(
-                    Uri.parse('https://fs-mt.qwerty123.tech/api/movies/book'),
-                    headers: {'Authorization': 'Bearer $accessToken'},
-                    body: jsonEncode({
-                      'sessionId': widget.session['id'],
-                      'seats': selectedSeats,
-                    }),
-                  );
-                  var bookingResult = jsonDecode(bookingResponse.body);
+                  Dio dio = Dio();
+                  dio.options.headers["Authorization"] = "Bearer $accessToken";
+                  Map<String, dynamic> requestBody = {
+                    "seats": selectedSeats,
+                    "sessionId": widget.session['id'].toString()
+                  };
 
-                  if (bookingResponse.statusCode == 200) {
+                  // Make the POST request
+
+                    Response response = await dio.post(
+                      "https://fs-mt.qwerty123.tech/api/movies/book",
+                      data: requestBody,
+                    );
+                    print("Response status: ${response.statusCode}");
+                    print("Response data: ${response.data}");
+
+                  if (response.statusCode == 200) {
                     // Booking successful, show the payment screen
-                    /*Navigator.of(context).push(
+                    Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) =>
                             PaymentScreen(
@@ -422,12 +429,12 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                               seats: selectedSeats,
                             ),
                       ),
-                    );*/
+                    );
                   } else {
                     // Booking failed, show an error message
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(bookingResult['message']),
+                        content: Text(response.toString()),
                       ),
                     );
                   }
@@ -441,3 +448,4 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 }
+
