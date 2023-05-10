@@ -1,9 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:final_project/page1.dart';
-import 'package:final_project/page2.dart';
-import 'package:final_project/page3.dart';
-import 'package:final_project/page4.dart';
-import 'package:final_project/page5.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth.dart';
@@ -38,8 +33,6 @@ class _MyAppState extends State<MyApp> {
     HomePage(),
     UserProfileScreen(),
     TicketsScreen(),
-    Page3(),
-    Page4(),
   ];
 
   void _onItemTapped(int index) {
@@ -77,11 +70,6 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       routes: {
-        '/page1': (context) => Page1(),
-        '/page2': (context) => Page2(),
-        '/page3': (context) => Page3(),
-        '/page4': (context) => Page4(),
-        '/page5': (context) => Page5(),
       },
     );
   }
