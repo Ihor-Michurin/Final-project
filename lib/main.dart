@@ -507,8 +507,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
       Navigator.popUntil(context, ModalRoute.withName('/'));
     } else {
       // Payment failed, show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Payment failed. Please try again.')),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Payment failed. Please try again.'),
+            actions: [
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
       );
     }
   }
@@ -523,68 +537,70 @@ class _PaymentScreenState extends State<PaymentScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Email'),
-              TextFormField(
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email address';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _email = value!,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Email'),
+                  TextFormField(
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email address';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => _email = value!,
+                  ),
+                  SizedBox(height: 16),
+                  Text('Card number'),
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: _cardNumberController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your card number';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  Text('Expiration date'),
+                  TextFormField(
+                    keyboardType: TextInputType.datetime,
+                    controller: _expirationDateController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your card\'s expiration date';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  Text('CVV'),
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: _cvvController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your card\'s CVV code';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        _submitPayment();
+                      }
+                    },
+                    child: Text('Submit Payment'),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              Text('Card number'),
-              TextFormField(
-                keyboardType: TextInputType.number,
-                controller: _cardNumberController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your card number';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              Text('Expiration date'),
-              TextFormField(
-                keyboardType: TextInputType.datetime,
-                controller: _expirationDateController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your card\'s expiration date';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              Text('CVV'),
-              TextFormField(
-                keyboardType: TextInputType.number,
-                controller: _cvvController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your card\'s CVV code';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    _submitPayment();
-                  }
-                },
-                child: Text('Submit Payment'),
-              ),
-            ],
-          ),
+            )
         ),
       ),
     );
