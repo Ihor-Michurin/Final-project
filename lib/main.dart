@@ -10,6 +10,9 @@ import 'package:flutter/foundation.dart';
 import 'auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/services.dart';
+import 'package:barcode_widget/barcode_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +38,7 @@ class _MyAppState extends State<MyApp> {
   static final List<Widget> _pages = <Widget>[
     HomePage(),
     UserProfileScreen(),
-    Page2(),
+    TicketsScreen(),
     Page3(),
     Page4(),
   ];
@@ -69,7 +72,7 @@ class _MyAppState extends State<MyApp> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.access_time),
-              label: 'Page 2',
+              label: 'Tickets',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.accessibility),
@@ -709,6 +712,69 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class TicketsScreen extends StatefulWidget {
+  @override
+  _UserTicketsScreenState createState() => _UserTicketsScreenState();
+}
+
+class _UserTicketsScreenState extends State<TicketsScreen> {
+  List<dynamic> tickets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTickets();
+  }
+
+  Future<void> fetchTickets() async {
+    final url = 'https://fs-mt.qwerty123.tech/api/user/tickets';
+    final accessToken = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('access_token'));
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      setState(() {
+        tickets = jsonData['data'];
+      });
+    } else {
+      // Handle API error
+      print('Failed to fetch tickets: ${response.statusCode}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('My Tickets'),
+      ),
+      body: ListView.builder(
+        itemCount: tickets.length,
+        itemBuilder: (context, index) {
+          final ticket = tickets[index];
+          return ListTile(
+            leading: CachedNetworkImage(
+              imageUrl: ticket['smallImage'],
+              placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) => Icon(Icons.error),
+            ),
+            title: Text(ticket['name']),
+            subtitle: Text(
+              'Date: ${DateTime.fromMillisecondsSinceEpoch(ticket['date'] * 1000)}',
+            ),
+          );
+        },
       ),
     );
   }

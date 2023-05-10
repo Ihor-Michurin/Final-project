@@ -39,6 +39,9 @@ dependencies:
   crypto: ^3.0.3
   shared_preferences: ^2.1.0
   dio: ^5.1.2
+  cached_network_image: ^3.2.3
+  barcode_flutter: ^1.1.2
+  barcode_widget: ^2.0.3
 
 dev_dependencies:
   flutter_test:
