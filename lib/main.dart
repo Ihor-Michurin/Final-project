@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
   static final List<Widget> _pages = <Widget>[
     HomePage(),
     UserProfileScreen(),
-    TicketsScreen(),
+    const TicketsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
           ],
         ),
       ),
-      routes: {
+      routes: const {
       },
     );
   }
@@ -152,24 +152,24 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Film Search'),
+        title: const Text('Film Search'),
       ),
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: TextField(
               controller: searchController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search for movies',
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: TextField(
               controller: dateController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Enter date (YYYY-MM-DD)',
               ),
             ),
@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
               String date = dateController.text;
               searchMovies(query, date);
             },
-            child: Text('Search'),
+            child: const Text('Search'),
           ),
           Expanded(
             child: ListView.builder(
@@ -193,7 +193,7 @@ class _HomePageState extends State<HomePage> {
                       '${movies[index]['duration']} minutes | ${movies[index]['genre']}'),
                   trailing: Text(
                     '${movies[index]['rating']}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -239,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       );
                     },
-                    child: Text('Select Seats'),
+                    child: const Text('Select Seats'),
                   ),
                 );
               },
@@ -295,21 +295,21 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Seat Selection'),
+        title: const Text('Seat Selection'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             Text(
               'Select Seats for ${widget.room['name']} - ${widget.session['type']}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
             ),
             seats.isEmpty
-                ? CircularProgressIndicator() // Show a progress indicator while seats are being loaded
+                ? const CircularProgressIndicator() // Show a progress indicator while seats are being loaded
                 : Flexible(
               child: ListView.builder(
                 itemCount: seats.length,
@@ -320,14 +320,14 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     children: [
                       Text(
                         'Row ${row['index']}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       GridView.builder(
                         gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 8, // Number of columns
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
@@ -335,7 +335,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                         ),
                         itemCount: row['seats'].length,
                         shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (BuildContext context, int seatIndex) {
                           var seat = row['seats'][seatIndex];
                           return GestureDetector(
@@ -358,7 +358,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                               child: Center(
                                 child: Text(
                                   '${seat['index']}',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -388,7 +388,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 if (selectedSeats.isEmpty) {
                   // No seats were selected, show an error message
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Please select at least one seat.'),
                     ),
                   );
@@ -437,7 +437,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   }
                 }
               },
-              child: Text('Confirm Selection'),
+              child: const Text('Confirm Selection'),
             ),
           ],
         ),
@@ -453,7 +453,7 @@ class PaymentScreen extends StatefulWidget {
   final int sessionId;
   final List<int> seats;
 
-  PaymentScreen({
+  const PaymentScreen({super.key,
     required this.accessToken,
     required this.sessionId,
     required this.seats,
@@ -509,11 +509,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Error'),
-              content: Text('An error occurred during payment processing.'),
+              title: const Text('Error'),
+              content: const Text('An error occurred during payment processing.'),
               actions: [
                 TextButton(
-                  child: Text('OK'),
+                  child: const Text('OK'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -529,11 +529,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Error'),
-            content: Text('An error occurred during payment processing.'),
+            title: const Text('Error'),
+            content: const Text('An error occurred during payment processing.'),
             actions: [
               TextButton(
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -550,7 +550,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment'),
+        title: const Text('Payment'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -560,7 +560,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Email'),
+                  const Text('Email'),
                   TextFormField(
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -571,8 +571,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     },
                     onSaved: (value) => _email = value!,
                   ),
-                  SizedBox(height: 16),
-                  Text('Card number'),
+                  const SizedBox(height: 16),
+                  const Text('Card number'),
                   TextFormField(
                     keyboardType: TextInputType.number,
                     controller: _cardNumberController,
@@ -583,8 +583,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 16),
-                  Text('Expiration date'),
+                  const SizedBox(height: 16),
+                  const Text('Expiration date'),
                   TextFormField(
                     keyboardType: TextInputType.datetime,
                     controller: _expirationDateController,
@@ -595,8 +595,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 16),
-                  Text('CVV'),
+                  const SizedBox(height: 16),
+                  const Text('CVV'),
                   TextFormField(
                     keyboardType: TextInputType.number,
                     controller: _cvvController,
@@ -607,7 +607,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
@@ -615,7 +615,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         _submitPayment();
                       }
                     },
-                    child: Text('Submit Payment'),
+                    child: const Text('Submit Payment'),
                   ),
                 ],
               ),
@@ -674,23 +674,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Profile'),
+        title: const Text('User Profile'),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text('Name'),
+            title: const Text('Name'),
             subtitle: Text(userData['name'] ?? ""),
           ),
           ListTile(
-            title: Text('Phone Number'),
+            title: const Text('Phone Number'),
             subtitle: Text(userData['phoneNumber'] ?? ""),
           ),
           ListTile(
-            title: Text('Created At'),
+            title: const Text('Created At'),
             subtitle: Text(
               DateTime.fromMillisecondsSinceEpoch(
                 userData['createdAt'] * 1000,
@@ -713,6 +713,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
 
 class TicketsScreen extends StatefulWidget {
+  const TicketsScreen({super.key});
+
   @override
   _UserTicketsScreenState createState() => _UserTicketsScreenState();
 }
@@ -727,7 +729,7 @@ class _UserTicketsScreenState extends State<TicketsScreen> {
   }
 
   Future<void> fetchTickets() async {
-    final url = 'https://fs-mt.qwerty123.tech/api/user/tickets';
+    const url = 'https://fs-mt.qwerty123.tech/api/user/tickets';
     final accessToken = await SharedPreferences.getInstance()
         .then((prefs) => prefs.getString('access_token'));
 
@@ -751,7 +753,7 @@ class _UserTicketsScreenState extends State<TicketsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Tickets'),
+        title: const Text('My Tickets'),
       ),
       body: ListView.builder(
         itemCount: tickets.length,
@@ -760,8 +762,8 @@ class _UserTicketsScreenState extends State<TicketsScreen> {
           return ListTile(
             leading: CachedNetworkImage(
               imageUrl: ticket['smallImage'],
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.error),
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
             title: Text('Ticket ID: ${ticket['id']}'), // Display ticket ID
             subtitle: Column(
